@@ -13,8 +13,34 @@ class User {
     return User(
       firstName: json['firstName'],
       lastName: json['lastName'],
-      address:  json['address'],
+      address: json['address'],
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'address': address,
+    };
+  }
+}
+
+class Album {
+  List<User> users;
+
+  Album({required this.users});
+
+  factory Album.fromJson(List<dynamic> json) {
+    List<User> userList = json.map((i) => User.fromJson(i)).toList();
+
+    return Album(users: userList);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'users': users.map((user) => user.toJson()).toList(),
+    };
   }
 }
 
@@ -26,16 +52,16 @@ class DevTeam extends StatefulWidget {
 }
 
 class _DevTeamState extends State<DevTeam> {
-  late Future<User> futureUser;
+  late Future<Album> futureAlbum;
 
   @override
   void initState() {
     super.initState();
-    futureUser = fetchUser();
+    futureAlbum = fetchUsers();
   }
 
-  Future<User> fetchUser() async {
-    var uri = Uri.https('educserver-production.up.railway.app');
+  Future<Album> fetchUsers() async {
+    var uri = Uri.https('educserver-production.up.railway.app', '/api/get_devTeam');
     final response = await http.get(
       uri,
       headers: <String, String>{
@@ -44,9 +70,9 @@ class _DevTeamState extends State<DevTeam> {
     );
 
     if (response.statusCode == 200) {
-      return User.fromJson(jsonDecode(response.body));
+      return Album.fromJson(jsonDecode(response.body));
     } else {
-      throw Exception('Failed to load user');
+      throw Exception('Failed to load users');
     }
   }
 
@@ -57,15 +83,40 @@ class _DevTeamState extends State<DevTeam> {
         title: Text('User Info'),
       ),
       body: Center(
-        child: FutureBuilder<User>(
-          future: futureUser,
+        child: FutureBuilder<Album>(
+          future: futureAlbum,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return CircularProgressIndicator();
             } else if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
             } else if (snapshot.hasData) {
-              return Text('Name: ${snapshot.data!.firstName} ${snapshot.data!.lastName}');
+              return Center(
+                child: SizedBox(
+                  width: 500,
+                  child: ListView.builder(
+                    itemCount: snapshot.data!.users.length,
+                    itemBuilder: (context, index) {
+                      var user = snapshot.data!.users[index];
+                      return Card(
+                        color: Colors.red,
+                        child: ListTile(
+                          title: Text('${user.firstName} ${user.lastName}',
+                            style: TextStyle(
+                              color: Colors.white
+                            ),
+                          ),
+                          subtitle: Text(user.address,
+                            style: TextStyle(
+                                color: Colors.white
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              );
             } else {
               return Text('No data found');
             }
