@@ -8,6 +8,7 @@ import 'package:cloudinary_flutter/cloudinary_context.dart';
 import 'package:cloudinary_url_gen/cloudinary.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'devTeam.dart';
 
 void main() {
   CloudinaryContext.cloudinary = Cloudinary.fromCloudName(cloudName: 'dzmagqbeo');
@@ -293,6 +294,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 title: const Text('Log out'),
                 onTap: () {
                   Navigator.popUntil(context, ModalRoute.withName('/opening'));
+                },
+              ),
+
+              ListTile(
+                title: const Text('Development Team'),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => DevTeam())
+                  );
                 },
               ),
             ],
